@@ -1,69 +1,134 @@
 # Web Visitor Counter Log
 
-UTS Cloud Computing, case study 5. Group member names/NIMs must be supplied before submission.
+Aplikasi pencatat kunjungan untuk tugas UTS Cloud Computing, Telkom University. Aplikasi menyediakan halaman publik laboratorium dan dashboard untuk melihat serta mengelola log kunjungan.
 
-## Architecture
+## Identitas Kelompok
 
-Browser → Nginx on localhost:8090 → /api/ reverse proxy → backend:5000 on app-net → visitor-log-data:/var/lib/backend_data/visitor_logs.json.
-Windows is the development environment. Jenkins/build/deployment will run on the private server; that stage is not executed.
+| Nama | NIM |
+|---|---|
+| Arga Ulya Abdurohman | 101012301089 |
+| Mochammad Hakim Al Irsyad | 101012300152 |
+| Sandrina Eka Putri | 101012330279 |
 
-## Local Windows checks
+## Studi Kasus
 
-From this project directory in PowerShell:
+**Kasus 5 — Log & Hit Counter Pengunjung Web (Web Visitor Counter Log).**
+
+Halaman publik mencatat page view saat halaman `/` dibuka. Log berisi halaman, waktu, alamat IP yang terlihat oleh server, dan informasi peramban (user agent). Data ini mencatat page view, bukan identitas atau jumlah pengunjung unik. Dashboard pengelola memerlukan login dan menyediakan grafik, daftar log, tambah log manual, hapus log, dan logout.
+
+## Arsitektur
+
+![Diagram arsitektur Docker Web Visitor Counter Log](./arsitektur-docker.svg)
+
+Diagram dapat dibuat ulang dengan Python tanpa dependensi tambahan:
 
 ```powershell
-& '..\.venv-win\Scripts\python.exe' -m unittest discover -s tests -v
+python .\diagram.py
+```
+
+- **Frontend:** Nginx menyajikan berkas statis dari folder `frontend/` melalui bind mount. Nginx meneruskan permintaan `/api/` ke service `backend` melalui jaringan Docker.
+- **Backend:** REST API Python tanpa framework berat. Port `5000` hanya tersedia di jaringan internal Docker, tidak dipublikasikan langsung ke host.
+- **Penyimpanan:** `visitor_logs.json` berada di named volume `visitor-log-data`, sehingga datanya tetap ada saat container backend dihapus dan dibuat ulang.
+- **Jaringan:** Kedua service menggunakan custom bridge network `app-net` dan berkomunikasi menggunakan nama service Docker.
+- **Alamat lokal:** Frontend tersedia di `http://localhost:8090` secara default dan hanya diikat ke loopback.
+
+## Fitur dan API
+
+API diakses melalui prefix `/api` dari peramban. Endpoint pengelolaan log dan logout memerlukan bearer token hasil login.
+
+| Metode | Endpoint | Keterangan |
+|---|---|---|
+| `GET` | `/api/health` | Memeriksa kesiapan backend dan penyimpanan. |
+| `POST` | `/api/visit` | Mencatat page view publik untuk halaman `/`. |
+| `POST` | `/api/login` | Memverifikasi akun pengelola dan mengembalikan token sesi. |
+| `GET` | `/api/logs` | Mengambil jumlah dan daftar log; memerlukan autentikasi. |
+| `POST` | `/api/logs` | Menambahkan log manual; memerlukan autentikasi. |
+| `DELETE` | `/api/logs?index=X` | Menghapus log berdasarkan indeks daftar saat ini; memerlukan autentikasi. |
+| `POST` | `/api/logout` | Mencabut token sesi; memerlukan autentikasi. |
+
+Jumlah yang ditampilkan adalah jumlah log yang masih tersimpan. Menghapus log akan mengurangi jumlah tersebut. Indeks penghapusan dapat berubah setelah daftar diperbarui, jadi muat ulang data sebelum memilih log jika ada perubahan oleh pengguna lain.
+
+## Menjalankan Secara Lokal
+
+### Prasyarat
+
+- Docker Desktop atau Docker Engine dengan Docker Compose
+- Python 3 untuk menjalankan skrip konfigurasi akun dan pengujian
+- Node.js untuk pemeriksaan sintaks JavaScript
+
+### Langkah menjalankan
+
+1. Buka PowerShell di direktori repository.
+2. Buat konfigurasi akun pengelola lokal. Skrip akan meminta username dan password secara interaktif; password tidak ditampilkan atau disimpan.
+
+   ```powershell
+   python .\setup_account.py
+   ```
+
+   Skrip membuat file `.env` yang berisi verifier password, salt, serta port frontend. Jangan commit atau membagikan file ini.
+
+3. Build image backend dan jalankan seluruh stack:
+
+   ```powershell
+   docker compose up --build -d
+   ```
+
+4. Buka halaman publik di `http://localhost:8090`. Dashboard dapat dibuka melalui `http://localhost:8090/visitor-log.html`; login menggunakan akun yang dibuat pada langkah pertama.
+5. Periksa kondisi layanan:
+
+   ```powershell
+   docker compose ps
+   docker compose exec frontend nginx -t
+   ```
+
+   Pemeriksaan API dapat dilakukan dengan membuka `http://localhost:8090/api/health`; respons normal adalah `{"status":"ok"}`.
+
+6. Untuk menghentikan container tanpa menghapus named volume:
+
+   ```powershell
+   docker compose down
+   ```
+
+   Jangan menambahkan opsi `-v` jika data log perlu dipertahankan. Untuk menghidupkan kembali stack, jalankan `docker compose up -d`.
+
+### Pengujian dan pemeriksaan lokal
+
+Jalankan dari direktori repository:
+
+```powershell
+python -m unittest discover -s tests -v
 node --check frontend/app.js
+node --check frontend/landing.js
+node --check frontend/chart.js
+node --check frontend/chart-data.js
 ```
 
-Runtime backend is Python standard library only. Docker uses python:3.11-slim, not the Windows venv. Local interpreter observed Python 3.15.0; support/build suitability must be reviewed before final version pinning.
+Skrip `tests/docker_smoke.py` juga dapat digunakan untuk smoke test Compose. Skrip itu membuat `.env` uji hanya jika file tersebut belum ada, membangun dan menjalankan stack, lalu **membiarkan resource tetap berjalan**. Skrip menolak berjalan jika `.env` sudah tersedia; jangan menghapus atau menimpa konfigurasi akun yang ada hanya untuk menjalankan tes.
 
-## Local Docker smoke check
+## Konfigurasi Jenkins dan GitHub
 
-`tests/docker_smoke.py` creates a new ignored .env only when none exists, provisions a random disposable login verifier, builds/starts the stack and checks Nginx/health/login/CRUD/logout. It never removes resources. It deliberately discards the generated password, so its test account is not an interactive user account. Do not overwrite an existing .env to rerun it. Current containers remain running on loopback port 8090.
+Alur yang dituju adalah `git push` ke branch `main` → GitHub Webhook → Jenkins Pipeline → pengujian → build image → deployment → health check. Gunakan Jenkins agent Linux yang dipercaya dan memiliki Docker CLI/Compose serta akses yang memang diperlukan ke Docker Engine. Akses Docker pada praktiknya memberi kewenangan tinggi terhadap host; jangan menjalankan build dari pull request atau kode yang tidak dipercaya.
 
-```powershell
-& '..\.venv-win\Scripts\python.exe' tests/docker_smoke.py
-```
+### Persiapan Jenkins
 
-For interactive use, run `& '..\.venv-win\Scripts\python.exe' .\setup_account.py` locally in PowerShell. Password input is hidden and never sent to chat; an existing .env requires explicit replacement confirmation and a private recovery copy is retained. The tool writes a verifier only; it does not restart/recreate containers. That lifecycle step requires separate approval. This interactive path has been syntax-checked, not exercised with an owner password.
+1. Pasang dan konfigurasi Jenkins, Git, Docker/Compose, serta plugin GitHub dan Pipeline yang diperlukan pada server/agent.
+2. Simpan PAT GitHub sebagai Jenkins Credential (jangan menaruh token di repository atau Jenkinsfile). Panduan tugas meminta PAT classic dengan izin `repo` dan `admin:repo_hook`, serta masa berlaku 30 atau 90 hari. Batasi penggunaan credential, catat masa kedaluwarsanya, dan jangan tampilkan nilainya pada log.
+3. Buat job Pipeline yang mengambil Jenkinsfile dari branch `main` di repository ini. Hubungkan credential SCM pada konfigurasi job agar `checkout scm` dapat mengakses repository privat.
+4. Aktifkan trigger webhook GitHub yang sesuai pada job Jenkins. Atur webhook repository ke URL Jenkins yang dapat dijangkau GitHub melalui HTTPS (umumnya endpoint plugin GitHub Jenkins `/github-webhook/`) dan batasi event ke push. Jika Jenkins berada di jaringan privat, sediakan jalur publik HTTPS yang telah disetujui, misalnya tunnel yang dikonfigurasi untuk tugas, lalu uji dengan push yang aman.
+5. Siapkan konfigurasi deployment pada host sesuai kebutuhan pipeline, termasuk file `compose.deploy.yml`, `.env` privat, direktori aplikasi, container Jenkins bernama `visitor-log-jenkins`, dan endpoint health check yang dapat dijangkau agent.
+6. Jalankan pipeline dan periksa setiap stage serta health check. Verifikasi pemicu otomatis secara terpisah dengan push ke `main`.
 
-Alternatively provision your own AUTH_USERNAME, AUTH_SALT (at least 16 random bytes as hex), AUTH_PASSWORD_HASH (PBKDF2-HMAC-SHA256, 600000 iterations, UTF-8 password, hex digest) in private .env via an approved secure local workflow. Never commit, print or send a real password. Changes require deliberate backend restart/recreation; not performed automatically. Session TTL is 30 minutes, login limited to 10 attempts per minute globally. Static HTML is public, data/operations are authenticated. HTTPS is mandatory when credentials travel beyond loopback.
+### Catatan penting tentang Jenkinsfile saat ini
 
-## API and counting
+Jenkinsfile di repository ini memiliki lima stage (`Checkout`, `Test`, `Build`, `Deploy`, dan `Health Check`). Sebelum menjalankannya pada server, sesuaikan dan validasi konfigurasi lingkungan di dalamnya: pipeline merujuk ke direktori `/home/ubuntu/cloud-computing`, file `compose.deploy.yml` dan `.env` di host, container `visitor-log-jenkins`, serta alamat health check `172.20.100.100:8090`. File deployment tersebut dan konfigurasi server harus disiapkan terpisah; jangan menganggap pipeline siap pakai pada host lain. Jenkinsfile juga belum mendeklarasikan trigger webhook secara mandiri, sehingga trigger harus diaktifkan melalui konfigurasi job/plugin Jenkins.
 
-- POST /visit: public endpoint accepting only `{ "page": "/" }`; 30 writes/minute globally, no automatic retries. This is a demo limit, not complete bot protection.
-- POST /login: username/password → bearer token.
-- GET /logs: total_hits and indexed logs.
-- POST /logs: page, optional user_agent → add one entry.
-- DELETE /logs?index=X: delete current-list index; invalid input 400, nonexistent index 404.
-- POST /logout: revoke token.
-- GET /health: non-sensitive storage readiness.
+Belum ada deployment server, pengujian webhook, maupun verifikasi pipeline Jenkins yang diklaim oleh dokumentasi ini. Lakukan pengujian di lingkungan server yang dituju sebelum menyatakan alur CI/CD berhasil.
 
-Browser uses /api/ paths. Tokens live in sessionStorage, not URLs. Total count is the number of retained logs: deleting one reduces the count. Only opening/reloading the public landing page (`/` or `/index.html`) records a page view through POST /visit. Dashboard `/visitor-log.html` requires login and reads data every 30 seconds; table and chart show only page `/`, preserving original deletion indices. Chart periods use WIB and default to the HTTP server Date. Nginx overwrites X-Real-IP; backend trusts it only when the socket peer resolves to configured TRUSTED_PROXY=frontend. Docker Desktop may expose the gateway/NAT address rather than the device address. Historical IP values are unchanged.
+## Keamanan dan Batasan
 
-Storage uses a process-local lock and atomic replace. One backend process only. Corruption fails closed. Index-based deletion follows the assignment; concurrent users should refresh before choosing a record because indices can shift.
-
-## Private-server Jenkins setup — pending
-
-Use a dedicated trusted Linux agent with Python3, Docker/Compose, Git, curl and the needed Jenkins Pipeline/GitHub plugins. Docker access grants host administrative capability; never run untrusted PR builds. No server setup/install performed yet.
-
-Create SCM job using root Jenkinsfile/main and repository checkout PAT through Jenkins Credentials. Exam requests a classic PAT with repo/admin:repo_hook and 30/90-day expiration; never put values in source. Configure separate signed GitHub webhook and HTTPS reachability. Configure Jenkins secret-file credential ID visitor-log-env containing application verifier environment configuration, not a hardcoded source secret. Configure DEPLOY_DIR as a dedicated absolute Docker-host path and FRONTEND_URL reachable from the agent. Ensure the agent and host share that bind path if Jenkins is containerized. Check exact app-net/visitor-log-data ownership before the first deployment. The provided pipeline is UNVERIFIED against Jenkins and must be reviewed against the server before enabling it.
-
-Five stages: Checkout → Syntax Check (including tests) → Build Image (commit tag) → Automated Deployment (same image, stable frontend host path) → Health Check. Serialize builds. Backend port is not published. Keep secrets out of complete console output and screenshots.
-
-## Verification status and remaining deliverables
-
-Latest verification: nine unittest tests pass, including trusted proxy, spoofed/invalid/duplicate forwarding headers, DNS refresh/failure, CRUD, auth, rate limits, and storage preservation. Three Node check scripts pass (WIB aggregation, dashboard structure, shared table/chart refresh with original deletion indices). Real Edge root landing records exactly one page view; unauthenticated dashboard redirects to login.
-
-Earlier checks: three unittest groups passed (CRUD/validation, sessions, storage/concurrency/reopened-server persistence). Compose config/build/start, nginx -t, proxied health, login, GET/POST/DELETE count decrement and logout passed. JavaScript syntax previously checked with Windows Node.
-
-Additional executed checks: five stdlib regression tests pass, including login limits and malformed storage preservation. Windows Edge headless rendered the actual login page; desktop screenshot reviewed without clipping/overlap. A temporary host-file update was served through the Bind Mount while frontend image/start time stayed unchanged. Compose force-recreate replaced the backend container and preserved exact existing JSON bytes containing two records; same volume visitor-log-data and proxied health passed. Evidence: evidence/local-checks.json, login-desktop.png, persistence.json. Persistence hash checks do not prove the authenticated UI flow; no explicit docker rm -f video demonstration has been recorded.
-
-Not verified: authenticated browser interactions/mobile dashboard, private-server Jenkins validation/deploy, real push/webhook, negative deployment failure, full security review and coverage target. The earlier browser tool blocked localhost; Windows Edge was the successful render alternative. Do not equate a screenshot render with interactive end-to-end acceptance.
-
-Complete README member metadata/diagram as required by instructor and produce a 5–8 minute video: UI/API, approved backend container removal/recreation preserving exact records, real push through all stages to deployed change. Rubric: backend20/frontend15/Docker25/Jenkins25/docs15 percent. Nothing submitted to LMS.
-
-## Preservation and shutdown
-
-Do not delete named volumes or run global prune. Earlier coursework resources were not modified. Container removal and service shutdown require approval; no shutdown performed. Preserve known image plus corresponding frontend/config before server changes. No automatic rollback/zero downtime promised. On health failure inspect scoped logs/config/storage first, never reset corrupt data.
+- `.env` berisi konfigurasi autentikasi dan wajib dijaga privat. Jangan commit password, token, salt, atau verifier ke GitHub.
+- Akun pengelola dibuat melalui `setup_account.py`. Setelah mengganti `.env`, container backend perlu dibuat ulang agar konfigurasi baru digunakan.
+- Sesi login berlaku 30 menit. Endpoint login dibatasi hingga 10 percobaan per menit secara global; pencatatan kunjungan publik dibatasi hingga 30 permintaan per menit secara global.
+- Endpoint kunjungan publik dan batas permintaan tersebut bukan perlindungan bot lengkap.
+- Gunakan HTTPS saat kredensial dikirim melalui jaringan selain loopback. Server demo lokal mengikat port frontend hanya ke loopback.
+- Aplikasi ditujukan untuk demonstrasi satu proses backend. Mekanisme lock penyimpanan berlaku dalam proses tersebut; jangan jalankan beberapa backend bersamaan untuk satu file data.

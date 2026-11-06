@@ -13,27 +13,38 @@
     <a class="skip-link" href="#main">Lewati ke konten</a>
     <header class="topbar">
       <div class="shell bar-content">
-        <span class="wordmark"
-          >Laboratorium <span>/ Monitor kunjungan</span></span
-        ><button id="logout" class="quiet" type="button">Keluar</button>
+        <a class="brand" href="/" aria-label="Adaptive Network, halaman publik">
+          <span class="brand-mark" aria-hidden="true">AN</span>
+          <span class="brand-copy"
+            ><strong>Adaptive Network</strong><small>MONITOR KUNJUNGAN</small></span
+          >
+        </a>
+        <button id="logout" class="quiet" type="button">Keluar <span aria-hidden="true">↗</span></button>
       </div>
     </header>
     <main id="main" class="shell" tabindex="-1">
       <div class="page-heading">
         <div>
-          <p class="eyebrow">CATATAN AKTIVITAS</p>
+          <p class="eyebrow"><span class="live-dot"></span> RINGKASAN AKTIVITAS</p>
           <h1>Log kunjungan</h1>
+          <p class="heading-description">Pantau page view laboratorium dan aktivitas terbaru.</p>
         </div>
         <button id="refresh" class="quiet" type="button">
-          Muat ulang data
+          <span aria-hidden="true">⟳</span> Muat ulang data
         </button>
       </div>
       <p id="error" class="error" role="alert" hidden></p>
       <p id="status" class="sr-only" role="status" aria-live="polite">
         Menyiapkan data…
       </p>
-      <section id="chart-section" aria-labelledby="chart-heading">
-        <h2 id="chart-heading">Grafik kunjungan</h2>
+      <section id="chart-section" class="dashboard-panel chart-panel" aria-labelledby="chart-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">ANALITIK</p>
+            <h2 id="chart-heading">Grafik kunjungan</h2>
+          </div>
+          <span class="panel-tag"><span class="live-dot"></span> DATA TERSIMPAN</span>
+        </div>
 
         <form id="filters" class="entry-form">
           <div class="field">
@@ -74,8 +85,12 @@
           </svg>
         </div>
       </section>
-      <section class="entry-section" aria-labelledby="entry-title">
-        <div><h2 id="entry-title">Catat kunjungan manual</h2></div>
+      <section class="entry-section dashboard-panel" aria-labelledby="entry-title">
+        <div>
+          <p class="eyebrow">INPUT DATA</p>
+          <h2 id="entry-title">Catat kunjungan manual</h2>
+          <p class="muted">Tambahkan page view ke dalam riwayat.</p>
+        </div>
         <form id="entry-form" class="entry-form">
           <div class="field">
             <label for="page">Halaman</label
@@ -98,9 +113,13 @@
         aria-labelledby="history-title"
         aria-busy="true"
         id="log-section"
+        class="log-section dashboard-panel"
       >
         <div class="table-heading">
-          <h2 id="history-title">Riwayat kunjungan</h2>
+          <div>
+            <p class="eyebrow">LOG TERSIMPAN</p>
+            <h2 id="history-title">Riwayat kunjungan</h2>
+          </div>
           <p class="count">
             <strong id="total">—</strong> <span>log tersimpan</span>
           </p>

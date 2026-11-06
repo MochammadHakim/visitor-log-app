@@ -10,40 +10,103 @@
   <body>
     <header class="topbar">
       <nav class="shell bar-content" aria-label="Navigasi utama">
-        <strong>Laboratorium / Adaptive Network</strong
-        ><a href="login.html">Akses pengelola</a>
+        <a class="brand" href="/" aria-label="Adaptive Network, beranda">
+          <span class="brand-mark" aria-hidden="true">AN</span>
+          <span class="brand-copy"
+            ><strong>Adaptive Network</strong><small>LABORATORIUM</small></span
+          >
+        </a>
+        <a class="nav-link" href="login.html">Akses pengelola <span aria-hidden="true">↗</span></a>
       </nav>
     </header>
-    <main class="shell">
-      <p class="eyebrow">RUANG BELAJAR DAN EKSPERIMEN</p>
-      <h1>Memahami sistem.<br />Menguji ide.</h1>
-      <p>
-        Laboratorium dummy untuk praktikum jaringan komputer, cloud computing,
-        dan pengembangan sistem.
-      </p>
-      <section class="entry-section" aria-labelledby="practice">
-        <div>
-          <h2 id="practice">Bidang praktikum</h2>
-          <p>Belajar melalui eksperimen yang terukur dan dapat diulang.</p>
+    <main class="shell landing-main">
+      <section class="landing-hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="live-dot"></span> RUANG BELAJAR & EKSPERIMEN</p>
+          <h1 id="hero-title">Eksplorasi jaringan.<br /><span>Bangun masa depan.</span></h1>
+          <p class="hero-intro">
+            Ruang praktikum untuk memahami jaringan, cloud, dan otomasi melalui
+            eksperimen yang terukur dan dapat diulang.
+          </p>
+          <div class="hero-actions">
+            <a class="button-link" href="login.html">Buka monitor kunjungan <span aria-hidden="true">→</span></a>
+            <a class="text-link" href="#praktikum">Jelajahi laboratorium</a>
+          </div>
+          <div class="hero-caption">
+            <span class="caption-line"></span>
+            <span>Praktik · Analisis · Inovasi</span>
+          </div>
         </div>
-        <ul>
-          <li>Jaringan komputer dan software-defined networking</li>
-          <li>Container, storage, dan layanan cloud</li>
-          <li>Otomasi pengujian dan deployment</li>
-        </ul>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="visual-orbit orbit-one"></div>
+          <div class="visual-orbit orbit-two"></div>
+          <div class="visual-grid"></div>
+          <div class="network-node node-core"><span>AN</span></div>
+          <div class="network-node node-one"><span>NET</span></div>
+          <div class="network-node node-two"><span>CLOUD</span></div>
+          <div class="network-node node-three"><span>LAB</span></div>
+          <div class="network-link link-one"></div>
+          <div class="network-link link-two"></div>
+          <div class="network-link link-three"></div>
+          <div class="visual-label label-top"><span></span> SYSTEM ONLINE</div>
+          <div class="visual-label label-bottom">NETWORK <strong>LAB</strong> · 01</div>
+          <div class="visual-stamp">TELKOM<br />UNIVERSITY</div>
+        </div>
       </section>
-      <section class="log-section">
-        <h2>Informasi laboratorium</h2>
-        <p>
-          Halaman demonstrasi tugas Cloud Computing. Jadwal, fasilitas, dan
-          layanan pada halaman ini bersifat ilustratif.
-        </p>
-        <p class="muted">
-          Kunjungan dicatat sebagai page view beserta waktu, alamat jaringan,
-          dan informasi browser; bukan identitas atau pengunjung unik.
-        </p>
+
+      <section id="praktikum" class="practice-section" aria-labelledby="practice-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">APA YANG KAMI JELAJAHI</p>
+            <h2 id="practice-title">Belajar lewat eksperimen</h2>
+          </div>
+          <p>Konsep teknologi menjadi lebih nyata saat dirancang, diuji, dan diamati.</p>
+        </div>
+        <div class="practice-grid">
+          <article class="practice-card">
+            <span class="card-index">01 / NETWORK</span>
+            <span class="practice-icon" aria-hidden="true">⌘</span>
+            <h3>Jaringan & SDN</h3>
+            <p>Pelajari konektivitas, topologi, dan jaringan yang dapat diprogram.</p>
+          </article>
+          <article class="practice-card">
+            <span class="card-index">02 / CLOUD</span>
+            <span class="practice-icon" aria-hidden="true">◈</span>
+            <h3>Container & cloud</h3>
+            <p>Eksplorasi container, penyimpanan persisten, dan layanan cloud.</p>
+          </article>
+          <article class="practice-card">
+            <span class="card-index">03 / AUTOMATION</span>
+            <span class="practice-icon" aria-hidden="true">⟳</span>
+            <h3>Otomasi sistem</h3>
+            <p>Bangun alur pengujian dan deployment yang konsisten serta terukur.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="lab-note" aria-labelledby="lab-note-title">
+        <div class="note-symbol" aria-hidden="true">i</div>
+        <div>
+          <p class="eyebrow">TENTANG DEMO INI</p>
+          <h2 id="lab-note-title">Laboratorium simulasi</h2>
+          <p>
+            Halaman ini merupakan demonstrasi tugas Cloud Computing. Informasi
+            jadwal, fasilitas, dan layanan bersifat ilustratif.
+          </p>
+          <p class="privacy-note">
+            Kunjungan dicatat sebagai page view beserta waktu, alamat jaringan,
+            dan informasi browser—bukan identitas atau pengunjung unik.
+          </p>
+        </div>
         <p id="visit-status" role="status" class="sr-only"></p>
       </section>
     </main>
+    <footer class="site-footer">
+      <div class="shell footer-content">
+        <span>ADAPTIVE NETWORK LABORATORY</span>
+        <span>Cloud Computing · Telkom University</span>
+      </div>
+    </footer>
   </body>
 </html>

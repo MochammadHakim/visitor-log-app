@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="950" viewBox="0 0 1600 950" role="img" aria-labelledby="title description">
+  <title id="title">Arsitektur Docker Web Visitor Counter Log</title>
+  <desc id="description">Diagram aplikasi dengan browser, Nginx frontend, backend Python, jaringan bridge app-net, bind mount frontend, dan named volume visitor-log-data.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M1 1 L11 6 L1 11 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M1 1 L11 6 L1 11 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M1 1 L11 6 L1 11 Z" fill="#15803d"/>
+    </marker>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #172033; }
+      .title { font-size: 32px; font-weight: 700; }
+      .subtitle { font-size: 17px; fill: #475569; }
+      .section { font-size: 19px; font-weight: 700; }
+      .card-title { font-size: 21px; font-weight: 700; }
+      .body { font-size: 16px; }
+      .small { font-size: 14px; fill: #475569; }
+      .tiny { font-size: 13px; fill: #475569; }
+      .box { stroke-width: 2; rx: 16; }
+      .connector { fill: none; stroke: #334155; stroke-width: 3; marker-end: url(#arrow); }
+      .connector-blue { fill: none; stroke: #2563eb; stroke-width: 3; marker-end: url(#arrow-blue); }
+      .connector-green { fill: none; stroke: #15803d; stroke-width: 3; marker-end: url(#arrow-green); }
+    </style>
+  </defs>
+  <rect width="1600" height="950" fill="#f8fafc"/>
+  <text x="60" y="62" class="title">Arsitektur Docker — Web Visitor Counter Log</text>
+  <text x="60" y="94" class="subtitle">Alur runtime aplikasi lokal berdasarkan docker-compose.yml</text>
+
+  <!-- Docker host boundary -->
+  <rect x="420" y="125" width="1120" height="735" rx="24" fill="#ffffff" stroke="#64748b" stroke-width="2.5"/>
+  <rect x="450" y="108" width="360" height="36" rx="10" fill="#ffffff"/>
+  <text x="465" y="133" class="section">Docker Host · Docker Compose</text>
+
+  <!-- app-net boundary -->
+  <rect x="470" y="170" width="1020" height="390" rx="20" fill="#eff6ff" stroke="#60a5fa" stroke-width="2.5" stroke-dasharray="10 7"/>
+  <text x="495" y="203" class="section" fill="#1d4ed8">Custom bridge network: app-net</text>
+  <text x="495" y="226" class="small">DNS antar-container menggunakan nama service Docker</text>
+
+  <!-- Connectors, drawn behind the nodes -->
+  <path d="M350 270 H535" class="connector"/>
+  <path d="M950 350 H1035" class="connector-blue"/>
+  <path d="M780 635 C780 560 730 540 730 490" class="connector-green"/>
+  <path d="M1260 490 V635" class="connector"/>
+  <path d="M350 650 C440 650 460 430 535 430" class="connector-green"/>
+  <path d="M350 745 C600 900 1060 895 1160 510" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="8 6" marker-end="url(#arrow)"/>
+
+  <!-- User browser -->
+  <rect x="60" y="190" width="290" height="165" class="box" fill="#ecfeff" stroke="#0891b2"/>
+  <text x="85" y="228" class="card-title">Peramban pengguna</text>
+  <text x="85" y="261" class="body">Halaman publik: /</text>
+  <text x="85" y="287" class="body">Dashboard: /visitor-log.html</text>
+  <text x="85" y="322" class="small">HTML · CSS · Vanilla JavaScript</text>
+  <rect x="385" y="235" width="126" height="48" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="398" y="255" class="tiny">HTTP</text>
+  <text x="398" y="273" class="tiny">localhost:8090</text>
+
+  <!-- Nginx frontend container -->
+  <rect x="535" y="250" width="415" height="240" class="box" fill="#fff7ed" stroke="#ea580c"/>
+  <text x="560" y="286" class="card-title">Container frontend</text>
+  <text x="560" y="315" class="body">Image: nginx:alpine</text>
+  <text x="560" y="342" class="body">Nginx listen :80</text>
+  <line x1="560" y1="358" x2="925" y2="358" stroke="#fed7aa" stroke-width="2"/>
+  <text x="560" y="386" class="body">• Sajikan file statis dari /usr/share/nginx/html</text>
+  <text x="560" y="414" class="body">• Proxy /api/* → backend:5000</text>
+  <text x="560" y="442" class="small">Host bind: 127.0.0.1:8090 → container :80</text>
+  <text x="560" y="468" class="small">nginx.conf mengatur reverse proxy dan header</text>
+
+  <rect x="953" y="300" width="78" height="70" rx="10" fill="#ffffff" stroke="#bfdbfe"/>
+  <text x="963" y="325" class="tiny">HTTP API</text>
+  <text x="963" y="347" class="tiny">/api/*</text>
+
+  <!-- Backend container -->
+  <rect x="1035" y="250" width="425" height="240" class="box" fill="#f0fdf4" stroke="#16a34a"/>
+  <text x="1060" y="286" class="card-title">Container backend</text>
+  <text x="1060" y="315" class="body">Image: visitor-log-backend:${IMAGE_TAG:-dev}</text>
+  <text x="1060" y="342" class="body">Dockerfile: python:3.11-slim · app.py</text>
+  <line x1="1060" y1="358" x2="1435" y2="358" stroke="#bbf7d0" stroke-width="2"/>
+  <text x="1060" y="386" class="body">Python REST API · internal port :5000</text>
+  <text x="1060" y="414" class="body">/visit · /login · /logs · /logout · /health</text>
+  <text x="1060" y="442" class="small">DATA_DIR=/var/lib/backend_data</text>
+  <text x="1060" y="468" class="small">TRUSTED_PROXY=frontend</text>
+
+  <!-- Host project files -->
+  <rect x="60" y="520" width="290" height="270" class="box" fill="#f5f3ff" stroke="#7c3aed"/>
+  <text x="85" y="559" class="card-title">Folder proyek di host</text>
+  <text x="85" y="592" class="body">./frontend/</text>
+  <text x="85" y="619" class="small">HTML, CSS, JavaScript</text>
+  <text x="85" y="663" class="body">./frontend/nginx.conf</text>
+  <text x="85" y="690" class="small">Konfigurasi Nginx</text>
+  <text x="85" y="734" class="body">./backend/</text>
+  <text x="85" y="761" class="small">Sumber build image backend</text>
+
+  <!-- Mount labels -->
+  <rect x="375" y="570" width="170" height="54" rx="10" fill="#ffffff" stroke="#bbf7d0"/>
+  <text x="387" y="592" class="tiny">Bind mount :ro</text>
+  <text x="387" y="611" class="tiny">frontend → Nginx</text>
+  <rect x="500" y="720" width="245" height="58" rx="10" fill="#ffffff" stroke="#e9d5ff"/>
+  <text x="512" y="743" class="tiny">Build context: ./backend</text>
+  <text x="512" y="762" class="tiny">Dockerfile menyalin app.py</text>
+
+  <!-- Persistent named volume -->
+  <rect x="1035" y="635" width="425" height="150" class="box" fill="#fefce8" stroke="#ca8a04"/>
+  <text x="1060" y="672" class="card-title">Named volume</text>
+  <text x="1060" y="703" class="body">visitor-log-data</text>
+  <text x="1060" y="731" class="small">Mount ke backend: /var/lib/backend_data</text>
+  <text x="1060" y="758" class="small">File persisten: visitor_logs.json</text>
+
+  <!-- Host port and environment notes -->
+  <rect x="790" y="635" width="205" height="150" rx="14" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+  <text x="810" y="671" class="section">Konfigurasi</text>
+  <text x="810" y="701" class="small">.env lokal berisi</text>
+  <text x="810" y="724" class="small">kredensial/verifier.</text>
+  <text x="810" y="756" class="tiny">Jangan commit .env.</text>
+
+  <!-- Compose resource notes -->
+  <text x="470" y="822" class="small">Compose mengelola service frontend/backend, network app-net, dan volume visitor-log-data.</text>
+  <text x="470" y="844" class="small">Port backend tidak dipublikasikan langsung ke host; akses API melalui proxy Nginx.</text>
+  <text x="60" y="890" class="small">Catatan: Jenkins/GitHub CI/CD berada di luar runtime stack docker-compose ini.</text>
+</svg>

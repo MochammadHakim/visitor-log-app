@@ -10,53 +10,61 @@
   <body data-view="login">
     <header class="topbar">
       <div class="shell bar-content">
-        <span class="wordmark"
-          >Laboratorium <span>/ Monitor kunjungan</span></span
-        >
+        <a class="brand" href="/" aria-label="Adaptive Network, kembali ke halaman publik">
+          <span class="brand-mark" aria-hidden="true">AN</span>
+          <span class="brand-copy"
+            ><strong>Adaptive Network</strong><small>MONITOR KUNJUNGAN</small></span
+          >
+        </a>
+        <a class="nav-link" href="/">Kembali ke beranda <span aria-hidden="true">↗</span></a>
       </div>
     </header>
     <main class="login-main">
-      <p class="eyebrow">AKSES PENGELOLA</p>
-      <h1>Masuk</h1>
-      <p class="muted">
-        Gunakan akun pengelola untuk melihat dan mencatat kunjungan
-        laboratorium.
-      </p>
-      <p id="login-notice" class="error" role="alert" hidden>
-        Silakan login terlebih dahulu untuk mengakses monitor kunjungan.
-      </p>
-      <p id="error" class="error" role="alert" hidden></p>
-      <p id="status" class="status" role="status" aria-live="polite"></p>
-      <form id="login-form">
-        <div class="field">
-          <label for="username">Nama pengguna</label
-          ><input
-            id="username"
-            name="username"
-            autocomplete="username"
-            required
-            maxlength="256"
-            autocapitalize="none"
-            spellcheck="false"
-          />
-        </div>
-        <div class="field">
-          <label for="password">Kata sandi</label
-          ><input
-            id="password"
-            name="password"
-            type="password"
-            autocomplete="current-password"
-            required
-            maxlength="1024"
-          />
-        </div>
-        <button type="submit">Masuk ke monitor</button>
-      </form>
-      <p class="muted footnote">
-        Sesi disimpan hanya untuk tab ini. Keluar setelah selesai menggunakan
-        monitor.
-      </p>
+      <div class="login-card">
+        <div class="login-emblem" aria-hidden="true">AN</div>
+        <p class="eyebrow">RUANG PENGELOLA</p>
+        <h1>Selamat datang.</h1>
+        <p class="muted">
+          Masuk untuk melihat dan mengelola catatan kunjungan laboratorium.
+        </p>
+        <p id="login-notice" class="error" role="alert" hidden>
+          Silakan login terlebih dahulu untuk mengakses monitor kunjungan.
+        </p>
+        <p id="error" class="error" role="alert" hidden></p>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+        <form id="login-form">
+          <div class="field">
+            <label for="username">Nama pengguna</label
+            ><input
+              id="username"
+              name="username"
+              autocomplete="username"
+              required
+              maxlength="256"
+              autocapitalize="none"
+              spellcheck="false"
+              placeholder="Masukkan nama pengguna"
+            />
+          </div>
+          <div class="field">
+            <label for="password">Kata sandi</label
+            ><input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+              maxlength="1024"
+              placeholder="Masukkan kata sandi"
+            />
+          </div>
+          <button type="submit">Masuk ke monitor <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="muted footnote">
+          Sesi hanya tersimpan di tab ini. Keluar setelah selesai menggunakan
+          monitor.
+        </p>
+      </div>
     </main>
   </body>
 </html>

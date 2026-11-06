@@ -8,7 +8,7 @@ assert.ok(
   "chart must follow heading",
 );
 assert.ok(
-  html.indexOf('id="chart-section"') < html.indexOf('class="entry-section"'),
+  html.indexOf('id="chart-section"') < html.search(/class="entry-section(?:\s|")/),
   "chart must precede manual form",
 );
 assert.ok(!html.includes('href="chart.html"'), "no separate chart navigation");

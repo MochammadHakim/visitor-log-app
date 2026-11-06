@@ -120,9 +120,15 @@ Alur yang dituju adalah `git push` ke branch `main` → GitHub Webhook → Jenki
 
 ### Catatan penting tentang Jenkinsfile saat ini
 
-Jenkinsfile di repository ini memiliki lima stage (`Checkout`, `Test`, `Build`, `Deploy`, dan `Health Check`). Sebelum menjalankannya pada server, sesuaikan dan validasi konfigurasi lingkungan di dalamnya: pipeline merujuk ke direktori `/home/ubuntu/cloud-computing`, file `compose.deploy.yml` dan `.env` di host, container `visitor-log-jenkins`, serta alamat health check `172.20.100.100:8090`. File deployment tersebut dan konfigurasi server harus disiapkan terpisah; jangan menganggap pipeline siap pakai pada host lain. Jenkinsfile juga belum mendeklarasikan trigger webhook secara mandiri, sehingga trigger harus diaktifkan melalui konfigurasi job/plugin Jenkins.
+Jenkinsfile memiliki lima stage: `Checkout`, `Syntax Check`, `Build Image`, `Automated Deployment`, dan `Health Check`. Implementasi perbaikan ini belum dijalankan di Jenkins/VM. Sebelum menjalankannya pada server, sesuaikan dan validasi konfigurasi lingkungan di dalamnya: pipeline merujuk ke direktori `/home/ubuntu/cloud-computing`, file `deployment/docker-compose.yml` dan `.env` di host, container `visitor-log-jenkins`, serta alamat health check `172.20.100.100:8090`. File deployment tersebut dan konfigurasi server harus disiapkan terpisah; jangan menganggap pipeline siap pakai pada host lain. Jenkinsfile juga belum mendeklarasikan trigger webhook secara mandiri, sehingga trigger harus diaktifkan melalui konfigurasi job/plugin Jenkins.
 
-Belum ada deployment server, pengujian webhook, maupun verifikasi pipeline Jenkins yang diklaim oleh dokumentasi ini. Lakukan pengujian di lingkungan server yang dituju sebelum menyatakan alur CI/CD berhasil.
+Build #6 sebelumnya terverifikasi SUCCESS melalui GitHub webhook pada commit dda2cd83a73e14de046898c8863675d7635b1db1. Build #7 gagal dengan error resolusi host. Perbaikan pipeline lokal berikutnya belum di-push atau diuji pada Jenkins; keberhasilan build lama tidak membuktikan pipeline baru berhasil.
+
+Pipeline baru menjalankan syntax check dan unit tests, validasi Compose dengan `config --quiet` (tanpa mencetak secrets), serta `docker compose build backend` dengan tag commit. Deployment men-stage frontend secara rekursif dan Compose dari checkout ke `/home/ubuntu/cloud-computing/deployment`, mempertahankan `.env` privat di direktori induk dan named volume. Hanya file frontend usang di direktori deployment yang dibersihkan. Project Compose tetap `uts-visitor-log`; bind VM tetap `172.20.100.100:8090`. Kedua container aplikasi direcreate, sehingga ada downtime singkat dan sesi login berakhir; visitor logs tetap di named volume.
+
+Health probe memeriksa login HTTP 200, JSON readiness melalui Nginx, dan backend langsung melalui `docker exec`. Budget retry 50 detik; hasil boolean disimpan ke `evidence/health.json` dan diarsipkan Jenkins. HTTPS aplikasi dan masalah DNS VM masih membutuhkan pekerjaan terpisah. Jangan menganggap login HTTP melalui VPN memenuhi persyaratan HTTPS.
+
+Regression checks offline: `python -m unittest discover -s tests -v`. Tidak mengakses data produksi atau Docker daemon.
 
 ## Keamanan dan Batasan
 
